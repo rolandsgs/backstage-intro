@@ -1,0 +1,81 @@
+apiVersion: backstage.io/v1beta3
+kind: Template
+# some metadata about the template itself
+metadata:
+  name: aspnet-core-webapi
+  title: ASP.NET Core 5.0 Web API
+  description: Modelo utilizado para criar um novo projeto de Web API usando ASP.NET Core 5.0
+  tags; [dotnet, webapi, dotnetcore, aspnetcore]
+spec:
+  owner: nees-devops/backstage
+  type: service
+
+  # these are the steps which are rendered in the frontend with the form input
+  parameters:
+    - title: Configuração do Projeto
+      required: [name, title, description, namespace]
+      properties:
+        name:
+          title: Nome
+          type: string
+          description: Nome do seu projeto. Use apenas letras, números, pontos e hifens
+          ui:autofocus: true
+        title:
+          title: Título
+          type: string
+          description: Nome amigavel do seu projeto, que será exibido no READM e no catalogo de componentes
+        description:
+          title: Descrição
+          type: string
+          decription: Breve descrição do seu projeto
+          ui:options:
+            rows: 5
+        owner:
+          title: Proprietarios
+          type: string
+          description: Equipe Responsável pelo projeto
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds: [Group]
+    - title: Configuração do Respositório
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Local do Respositório
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+
+  # here's the steps that are executed in series in the scaffolder backend
+  steps:
+    - id: Template
+      name: Fetch Skeleton + Template
+      action: fetch:template
+      input:
+        url: ./template
+        values:
+          name: ${{ parameters.name }}
+          title: ${{ parameters.title }}
+          description: ${{ parameters.description }}
+          destination: ${{ parseRepoUrl parameters.repoUrl }}
+          owner: ${{ parameters.owner }}
+
+    - id: publish
+      name: Publish
+      action: publish:github
+      input:
+        allowedHosts: ['github.com']
+        description: This is ${{ parameters.name }}
+        repoUrl: ${{ parameters.repoUrl }}
+
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
+  output:
+    remoteUrl: ${{ steps.publish.output.remoteUrl }}
