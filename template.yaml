@@ -5,7 +5,7 @@ metadata:
   name: aspnet-core-webapi
   title: ASP.NET Core 5.0 Web API
   description: Modelo utilizado para criar um novo projeto de Web API usando ASP.NET Core 5.0
-  tags; [dotnet, webapi, dotnetcore, aspnetcore]
+  tags: [dotnet, webapi, dotnetcore, aspnetcore]
 spec:
   owner: nees-devops/backstage
   type: service
